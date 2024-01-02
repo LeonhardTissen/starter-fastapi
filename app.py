@@ -16,7 +16,7 @@ async def root():
     return {"message": "Hello World"}
 
 # Load the JSON file containing all words
-with open('/words_alpha.json') as f:
+with open('words_alpha.json') as f:
 	words = json.load(f)
 
 @app.get('/checkword')
