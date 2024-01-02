@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse
+import json
 
 from pydantic import BaseModel
 
@@ -14,22 +15,21 @@ class Item(BaseModel):
 async def root():
     return {"message": "Hello World"}
 
+# Load the JSON file containing all words
+with open('/words_alpha.json') as f:
+	words = json.load(f)
 
-@app.get('/favicon.ico', include_in_schema=False)
-async def favicon():
-    return FileResponse('favicon.ico')
+@app.get('/checkword')
+async def check_word(word: str = Query(...)):
+    if word in words:
+        return {'result': True}
+    else:
+        return {'result': False}
 
-
-@app.get("/item/{item_id}")
-async def read_item(item_id: int):
-    return {"item_id": item_id}
-
-
-@app.get("/items/")
-async def list_items():
-    return [{"item_id": 1, "name": "Foo"}, {"item_id": 2, "name": "Bar"}]
-
-
-@app.post("/items/")
-async def create_item(item: Item):
-    return item
+@app.get('/getmatchingword')
+async def get_matching_word(word: str = Query(...), length: int = Query(0, gt=0), reverse: bool = Query(False)):
+    for w in words:
+        if len(w) == length and (w.startswith(word) or (reverse and w.endswith(word))):
+            return {'matching_word': w}
+    
+    return {'message': 'No matching word found'}
